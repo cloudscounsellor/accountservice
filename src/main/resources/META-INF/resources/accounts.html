@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Account REST service</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
+    <!-- Load AngularJS -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript">
+      var app = angular.module("AccountManagement", []);
+
+      //Controller Part
+      app.controller("AccountManagementController", function ($scope, $http) {
+
+        //Initialize page with default data which is blank in this example
+        $scope.accounts = [];
+
+        $scope.form = {
+          customerID: "",
+          accountType: ""
+        };
+
+        //Now load the data from server
+        _refreshPageData();
+
+        //HTTP POST methods for add accounts
+        $scope.add = function () {
+          var data = { "customerID": $scope.form.customerID, "accountType": $scope.form.accountType };
+
+          $http({
+            method: "POST",
+            url: '/accounts',
+            data: angular.toJson(data),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(_success, _error);
+        };
+
+        /* Private Methods */
+        //HTTP GET- get all accounts collection
+        function _refreshPageData() {
+          $http({
+            method: 'GET',
+            url: '/accounts'
+          }).then(function successCallback(response) {
+            $scope.accounts = response.data;
+          }, function errorCallback(response) {
+            console.log(response.statusText);
+          });
+        }
+
+        function _success(response) {
+          _refreshPageData();
+          _clearForm();
+        }
+
+        function _error(response) {
+          alert(response.data.message || response.statusText);
+        }
+
+        //Clear the form
+        function _clearForm() {
+          $scope.form.customerID = "";
+          $scope.form.accountType = "";
+        }
+      });
+    </script>
+</head>
+<body ng-app="AccountManagement" ng-controller="AccountManagementController">
+
+<div class="container">
+    <h1>REST Service - Accounts</h1>
+
+    <h3>Add an Account</h3>
+    <form ng-submit="add()">
+        <div class="row">
+            <div class="col-6"><input type="text" placeholder="customerID" ng-model="form.customerID" size="60"/></div>
+        </div>
+        <div class="row">
+            <div class="col-6"><input type="text" placeholder="accountType" ng-model="form.accountType" size="60"/></div>
+        </div>
+        <input type="submit" value="Save"/>
+    </form>
+
+    <h3>Account List</h3>
+    <div class="row">
+        <div class="col-4">Customer ID</div>
+        <div class="col-8">Account Type</div>
+    </div>
+    <div class="row" ng-repeat="account in accounts">
+        <div class="col-4">{{ account.customerID }}</div>
+        <div class="col-8">{{ account.accountType }}</div>
+    </div>
+</div>
+
+</body>
+</html>
